@@ -914,91 +914,91 @@ CCD::~CCD()
         delete [] fileWriteBuffer;
 }
 
-void CCD::setBLOBManager(const char *device, INDI::Property *prop)
+void CCD::setBLOBManager(const char *device, INDI::Property prop)
 {
-    if (!prop->getRegistered())
+    if (!prop.getRegistered())
         return;
 
     if (device == getDeviceName())
         emit newBLOBManager(prop);
 }
 
-void CCD::registerProperty(INDI::Property *prop)
+void CCD::registerProperty(INDI::Property prop)
 {
     if (isConnected())
         readyTimer.get()->start();
 
-    if (!strcmp(prop->getName(), "GUIDER_EXPOSURE"))
+    if (prop.isNameMatch("GUIDER_EXPOSURE"))
     {
         HasGuideHead = true;
         guideChip.reset(new CCDChip(this, CCDChip::GUIDE_CCD));
     }
-    else if (!strcmp(prop->getName(), "CCD_FRAME_TYPE"))
+    else if (prop.isNameMatch("CCD_FRAME_TYPE"))
     {
-        ISwitchVectorProperty *ccdFrame = prop->getSwitch();
+        ISwitchVectorProperty *ccdFrame = prop.getSwitch();
 
         primaryChip->clearFrameTypes();
 
         for (int i = 0; i < ccdFrame->nsp; i++)
             primaryChip->addFrameLabel(ccdFrame->sp[i].label);
     }
-    else if (!strcmp(prop->getName(), "CCD_FRAME"))
+    else if (prop.isNameMatch("CCD_FRAME"))
     {
-        INumberVectorProperty *np = prop->getNumber();
+        INumberVectorProperty *np = prop.getNumber();
         if (np && np->p != IP_RO)
             primaryChip->setCanSubframe(true);
     }
-    else if (!strcmp(prop->getName(), "GUIDER_FRAME"))
+    else if (prop.isNameMatch("GUIDER_FRAME"))
     {
-        INumberVectorProperty *np = prop->getNumber();
+        INumberVectorProperty *np = prop.getNumber();
         if (np && np->p != IP_RO)
             guideChip->setCanSubframe(true);
     }
-    else if (!strcmp(prop->getName(), "CCD_BINNING"))
+    else if (prop.isNameMatch("CCD_BINNING"))
     {
-        INumberVectorProperty *np = prop->getNumber();
+        INumberVectorProperty *np = prop.getNumber();
         if (np && np->p != IP_RO)
             primaryChip->setCanBin(true);
     }
-    else if (!strcmp(prop->getName(), "GUIDER_BINNING"))
+    else if (prop.isNameMatch("GUIDER_BINNING"))
     {
-        INumberVectorProperty *np = prop->getNumber();
+        INumberVectorProperty *np = prop.getNumber();
         if (np && np->p != IP_RO)
             guideChip->setCanBin(true);
     }
-    else if (!strcmp(prop->getName(), "CCD_ABORT_EXPOSURE"))
+    else if (prop.isNameMatch("CCD_ABORT_EXPOSURE"))
     {
-        ISwitchVectorProperty *sp = prop->getSwitch();
+        ISwitchVectorProperty *sp = prop.getSwitch();
         if (sp && sp->p != IP_RO)
             primaryChip->setCanAbort(true);
     }
-    else if (!strcmp(prop->getName(), "GUIDER_ABORT_EXPOSURE"))
+    else if (prop.isNameMatch("GUIDER_ABORT_EXPOSURE"))
     {
-        ISwitchVectorProperty *sp = prop->getSwitch();
+        ISwitchVectorProperty *sp = prop.getSwitch();
         if (sp && sp->p != IP_RO)
             guideChip->setCanAbort(true);
     }
-    else if (!strcmp(prop->getName(), "CCD_TEMPERATURE"))
+    else if (prop.isNameMatch("CCD_TEMPERATURE"))
     {
-        INumberVectorProperty *np = prop->getNumber();
+        INumberVectorProperty *np = prop.getNumber();
         HasCooler                 = true;
         CanCool                   = (np->p != IP_RO);
         if (np)
             emit newTemperatureValue(np->np[0].value);
     }
-    else if (!strcmp(prop->getName(), "CCD_COOLER"))
+    else if (prop.isNameMatch("CCD_COOLER"))
     {
         // Can turn cooling on/off
         HasCoolerControl = true;
     }
-    else if (!strcmp(prop->getName(), "CCD_VIDEO_STREAM"))
+    else if (prop.isNameMatch("CCD_VIDEO_STREAM"))
     {
         // Has Video Stream
         HasVideoStream = true;
     }
-    else if (!strcmp(prop->getName(), "CCD_TRANSFER_FORMAT"))
+    else if (prop.isNameMatch("CCD_TRANSFER_FORMAT"))
     {
-        ISwitchVectorProperty *sp = prop->getSwitch();
+        ISwitchVectorProperty *sp = prop.getSwitch();
         if (sp)
         {
             ISwitch *format = IUFindSwitch(sp, "FORMAT_NATIVE");
@@ -1008,9 +1008,9 @@ void CCD::registerProperty(INDI::Property *prop)
                 transferFormat = FORMAT_FITS;
         }
     }
-    else if (!strcmp(prop->getName(), "CCD_EXPOSURE_PRESETS"))
+    else if (prop.isNameMatch("CCD_EXPOSURE_PRESETS"))
     {
-        ISwitchVectorProperty *svp = prop->getSwitch();
+        ISwitchVectorProperty *svp = prop.getSwitch();
         if (svp)
         {
             bool ok = false;
@@ -1048,9 +1048,9 @@ void CCD::registerProperty(INDI::Property *prop)
             }
         }
     }
-    else if (!strcmp(prop->getName(), "CCD_EXPOSURE_LOOP"))
+    else if (prop.isNameMatch("CCD_EXPOSURE_LOOP"))
     {
-        ISwitchVectorProperty *sp = prop->getSwitch();
+        ISwitchVectorProperty *sp = prop.getSwitch();
         if (sp)
         {
             ISwitch *looping = IUFindSwitch(sp, "LOOP_ON");
@@ -1060,9 +1060,9 @@ void CCD::registerProperty(INDI::Property *prop)
                 IsLooping = false;
         }
     }
-    else if (!strcmp(prop->getName(), "TELESCOPE_TYPE"))
+    else if (prop.isNameMatch("TELESCOPE_TYPE"))
     {
-        ISwitchVectorProperty *sp = prop->getSwitch();
+        ISwitchVectorProperty *sp = prop.getSwitch();
         if (sp)
         {
             ISwitch *format = IUFindSwitch(sp, "TELESCOPE_PRIMARY");
@@ -1072,24 +1072,24 @@ void CCD::registerProperty(INDI::Property *prop)
                 telescopeType = TELESCOPE_GUIDE;
         }
     }
-    else if (!strcmp(prop->getName(), "CCD_WEBSOCKET_SETTINGS"))
+    else if (prop.isNameMatch("CCD_WEBSOCKET_SETTINGS"))
     {
-        INumberVectorProperty *np = prop->getNumber();
+        INumberVectorProperty *np = prop.getNumber();
         m_Media->setURL(QUrl(QString("ws://%1:%2").arg(clientManager->getHost()).arg(np->np[0].value)));
         m_Media->connectServer();
     }
-    else if (!strcmp(prop->getName(), "CCD1"))
+    else if (prop.isNameMatch("CCD1"))
     {
-        IBLOBVectorProperty *bp = prop->getBLOB();
+        IBLOBVectorProperty *bp = prop.getBLOB();
         primaryCCDBLOB = bp->bp;
         primaryCCDBLOB->bvp = bp;
     }
     // try to find gain and/or offset property, if any
-    else if ( (gainN == nullptr || offsetN == nullptr) && prop->getType() == INDI_NUMBER)
+    else if ( (gainN == nullptr || offsetN == nullptr) && prop.getType() == INDI_NUMBER)
     {
         // Since gain is spread among multiple property depending on the camera providing it
         // we need to search in all possible number properties
-        INumberVectorProperty *controlNP = prop->getNumber();
+        INumberVectorProperty *controlNP = prop.getNumber();
         if (controlNP)
         {
             for (int i = 0; i < controlNP->nnp; i++)

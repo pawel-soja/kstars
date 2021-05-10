@@ -454,23 +454,23 @@ void Focus::checkTemperatureSource(int index)
 
 bool Focus::findTemperatureElement(ISD::GDInterface *device)
 {
-    INDI::Property *temperatureProperty = device->getProperty("FOCUS_TEMPERATURE");
-    if (!temperatureProperty)
+    auto temperatureProperty = device->getProperty("FOCUS_TEMPERATURE");
+    if (!temperatureProperty.isValid())
         temperatureProperty = device->getProperty("CCD_TEMPERATURE");
-    if (temperatureProperty)
+    if (temperatureProperty.isValid())
     {
-        currentTemperatureSourceElement = temperatureProperty->getNumber()->at(0);
+        currentTemperatureSourceElement = temperatureProperty.getNumber()->at(0);
         return true;
     }
 
     temperatureProperty = device->getProperty("WEATHER_PARAMETERS");
-    if (temperatureProperty)
+    if (temperatureProperty.isValid())
     {
-        for (int i = 0; i < temperatureProperty->getNumber()->count(); i++)
+        for (auto &it: *temperatureProperty.getNumber())
         {
-            if (strstr(temperatureProperty->getNumber()->at(i)->getName(), "_TEMPERATURE"))
+            if (strstr(it.getName(), "_TEMPERATURE"))
             {
-                currentTemperatureSourceElement = temperatureProperty->getNumber()->at(i);
+                currentTemperatureSourceElement = &it;
                 return true;
             }
         }
@@ -2752,10 +2752,10 @@ void Focus::autoFocusRel()
     }
 }
 
-/*void Focus::registerFocusProperty(INDI::Property *prop)
+/*void Focus::registerFocusProperty(INDI::Property prop)
 {
     // Return if it is not our current focuser
-    if (strcmp(prop->getDeviceName(), currentFocuser->getDeviceName()))
+    if (strcmp(prop.getDeviceName(), currentFocuser->getDeviceName()))
         return;
 
     // Do not make unnecessary function call

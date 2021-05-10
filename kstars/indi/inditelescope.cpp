@@ -54,14 +54,14 @@ Telescope::Telescope(GDInterface *iPtr) : DeviceDecorator(iPtr)
     qDBusRegisterMetaType<ISD::Telescope::PierSide>();
 }
 
-void Telescope::registerProperty(INDI::Property *prop)
+void Telescope::registerProperty(INDI::Property prop)
 {
     if (isConnected())
         readyTimer.start();
 
-    if (!strcmp(prop->getName(), "TELESCOPE_INFO"))
+    if (prop.isNameMatch("TELESCOPE_INFO"))
     {
-        INumberVectorProperty *ti = prop->getNumber();
+        auto ti = prop.getNumber();
 
         if (ti == nullptr)
             return;
@@ -69,34 +69,34 @@ void Telescope::registerProperty(INDI::Property *prop)
         bool aperture_ok = false, focal_ok = false;
         double temp = 0;
 
-        INumber *aperture = IUFindNumber(ti, "TELESCOPE_APERTURE");
-        if (aperture && aperture->value == 0)
+        auto aperture = ti->findWidgetByName("TELESCOPE_APERTURE");
+        if (aperture && aperture->getValue() == 0)
         {
             if (getDriverInfo()->getAuxInfo().contains("TELESCOPE_APERTURE"))
             {
                 temp = getDriverInfo()->getAuxInfo().value("TELESCOPE_APERTURE").toDouble(&aperture_ok);
                 if (aperture_ok)
                 {
-                    aperture->value     = temp;
-                    INumber *g_aperture = IUFindNumber(ti, "GUIDER_APERTURE");
-                    if (g_aperture && g_aperture->value == 0)
-                        g_aperture->value = aperture->value;
+                    aperture->setValue(temp);
+                    auto g_aperture = ti->findWidgetByName("GUIDER_APERTURE");
+                    if (g_aperture && g_aperture->getValue() == 0)
+                        g_aperture->setValue(aperture->getValue());
                 }
             }
         }
 
-        INumber *focal_length = IUFindNumber(ti, "TELESCOPE_FOCAL_LENGTH");
-        if (focal_length && focal_length->value == 0)
+        auto focal_length = ti->findWidgetByName("TELESCOPE_FOCAL_LENGTH");
+        if (focal_length && focal_length->getValue() == 0)
         {
             if (getDriverInfo()->getAuxInfo().contains("TELESCOPE_FOCAL_LENGTH"))
             {
                 temp = getDriverInfo()->getAuxInfo().value("TELESCOPE_FOCAL_LENGTH").toDouble(&focal_ok);
                 if (focal_ok)
                 {
-                    focal_length->value = temp;
-                    INumber *g_focal    = IUFindNumber(ti, "GUIDER_FOCAL_LENGTH");
-                    if (g_focal && g_focal->value == 0)
-                        g_focal->value = focal_length->value;
+                    focal_length->setValue(temp);
+                    auto g_focal    = ti->findWidgetByName("GUIDER_FOCAL_LENGTH");
+                    if (g_focal && g_focal->getValue() == 0)
+                        g_focal->setValue(focal_length->getValue());
                 }
             }
         }
@@ -104,22 +104,22 @@ void Telescope::registerProperty(INDI::Property *prop)
         if (aperture_ok && focal_ok)
             clientManager->sendNewNumber(ti);
     }
-    else if (!strcmp(prop->getName(), "ON_COORD_SET"))
+    else if (prop.isNameMatch("ON_COORD_SET"))
     {
-        m_canGoto = IUFindSwitch(prop->getSwitch(), "TRACK") != nullptr;
-        m_canSync = IUFindSwitch(prop->getSwitch(), "SYNC") != nullptr;
+        m_canGoto = prop.getSwitch()->findWidgetByName("TRACK") != nullptr;
+        m_canSync = prop.getSwitch()->findWidgetByName("SYNC") != nullptr;
     }
     // Telescope Park
-    else if (!strcmp(prop->getName(), "TELESCOPE_PARK"))
+    else if (prop.isNameMatch("TELESCOPE_PARK"))
     {
-        ISwitchVectorProperty *svp = prop->getSwitch();
+        auto svp = prop.getSwitch();
 
         if (svp)
         {
-            ISwitch *sp = IUFindSwitch(svp, "PARK");
+            auto sp = svp->findWidgetByName("PARK");
             if (sp)
             {
-                if ((sp->s == ISS_ON) && svp->s == IPS_OK)
+                if ((sp->getState() == ISS_ON) && svp->getState() == IPS_OK)
                 {
                     m_ParkStatus = PARK_PARKED;
                     emit newParkStatus(m_ParkStatus);
@@ -131,7 +131,7 @@ void Telescope::registerProperty(INDI::Property *prop)
                     if (unParkAction)
                         unParkAction->setEnabled(true);
                 }
-                else if ((sp->s == ISS_OFF) && svp->s == IPS_OK)
+                else if ((sp->getState() == ISS_OFF) && svp->getState() == IPS_OK)
                 {
                     m_ParkStatus = PARK_UNPARKED;
                     emit newParkStatus(m_ParkStatus);
@@ -146,9 +146,9 @@ void Telescope::registerProperty(INDI::Property *prop)
             }
         }
     }
-    else if (!strcmp(prop->getName(), "TELESCOPE_PIER_SIDE"))
+    else if (prop.isNameMatch("TELESCOPE_PIER_SIDE"))
     {
-        ISwitchVectorProperty *svp = prop->getSwitch();
+        auto svp = prop.getSwitch();
         int currentSide = IUFindOnSwitchIndex(svp);
         if (currentSide != m_PierSide)
         {
@@ -156,52 +156,52 @@ void Telescope::registerProperty(INDI::Property *prop)
             emit pierSideChanged(m_PierSide);
         }
     }
-    else if (!strcmp(prop->getName(), "ALIGNMENT_POINTSET_ACTION") || !strcmp(prop->getName(), "ALIGNLIST"))
+    else if (prop.isNameMatch("ALIGNMENT_POINTSET_ACTION") || prop.isNameMatch("ALIGNLIST"))
         m_hasAlignmentModel = true;
-    else if (!strcmp(prop->getName(), "TELESCOPE_TRACK_STATE"))
+    else if (prop.isNameMatch("TELESCOPE_TRACK_STATE"))
         m_canControlTrack = true;
-    else if (!strcmp(prop->getName(), "TELESCOPE_TRACK_MODE"))
+    else if (prop.isNameMatch("TELESCOPE_TRACK_MODE"))
     {
         m_hasTrackModes = true;
-        ISwitchVectorProperty *svp = prop->getSwitch();
+        auto svp = prop.getSwitch();
         for (int i = 0; i < svp->nsp; i++)
         {
-            if (!strcmp(svp->sp[i].name, "TRACK_SIDEREAL"))
+            if (svp->at(i)->isNameMatch("TRACK_SIDEREAL"))
                 TrackMap[TRACK_SIDEREAL] = i;
-            else if (!strcmp(svp->sp[i].name, "TRACK_SOLAR"))
+            else if (svp->at(i)->isNameMatch("TRACK_SOLAR"))
                 TrackMap[TRACK_SOLAR] = i;
-            else if (!strcmp(svp->sp[i].name, "TRACK_LUNAR"))
+            else if (svp->at(i)->isNameMatch("TRACK_LUNAR"))
                 TrackMap[TRACK_LUNAR] = i;
-            else if (!strcmp(svp->sp[i].name, "TRACK_CUSTOM"))
+            else if (svp->at(i)->isNameMatch("TRACK_CUSTOM"))
                 TrackMap[TRACK_CUSTOM] = i;
         }
     }
-    else if (!strcmp(prop->getName(), "TELESCOPE_TRACK_RATE"))
+    else if (prop.isNameMatch("TELESCOPE_TRACK_RATE"))
         m_hasCustomTrackRate = true;
-    else if (!strcmp(prop->getName(), "TELESCOPE_ABORT_MOTION"))
+    else if (prop.isNameMatch("TELESCOPE_ABORT_MOTION"))
         m_canAbort = true;
-    else if (!strcmp(prop->getName(), "TELESCOPE_PARK_OPTION"))
+    else if (prop.isNameMatch("TELESCOPE_PARK_OPTION"))
         m_hasCustomParking = true;
-    else if (!strcmp(prop->getName(), "TELESCOPE_SLEW_RATE"))
+    else if (prop.isNameMatch("TELESCOPE_SLEW_RATE"))
     {
         m_hasSlewRates = true;
-        ISwitchVectorProperty *svp = prop->getSwitch();
+        auto svp = prop.getSwitch();
         if (svp)
         {
             m_slewRates.clear();
-            for (int i = 0; i < svp->nsp; i++)
-                m_slewRates << svp->sp[i].label;
+            for (const auto &it: *svp)
+                m_slewRates << it.getLabel();
         }
     }
-    else if (!strcmp(prop->getName(), "EQUATORIAL_EOD_COORD"))
+    else if (prop.isNameMatch("EQUATORIAL_EOD_COORD"))
     {
         m_isJ2000 = false;
     }
-    else if (!strcmp(prop->getName(), "SAT_TRACKING_STAT"))
+    else if (prop.isNameMatch("SAT_TRACKING_STAT"))
     {
         m_canTrackSatellite = true;
     }
-    else if (!strcmp(prop->getName(), "EQUATORIAL_COORD"))
+    else if (prop.isNameMatch("EQUATORIAL_COORD"))
     {
         m_isJ2000 = true;
     }

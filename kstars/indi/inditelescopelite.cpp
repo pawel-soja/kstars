@@ -91,11 +91,11 @@ void TelescopeLite::setDeviceName(const QString &deviceName)
     }
 }
 
-void TelescopeLite::registerProperty(INDI::Property *prop)
+void TelescopeLite::registerProperty(INDI::Property prop)
 {
-    if (!strcmp(prop->getName(), "TELESCOPE_INFO"))
+    if (prop.isNameMatch("TELESCOPE_INFO"))
     {
-        INumberVectorProperty *ti = prop->getNumber();
+        INumberVectorProperty *ti = prop.getNumber();
 
         if (ti == nullptr)
             return;
@@ -104,9 +104,9 @@ void TelescopeLite::registerProperty(INDI::Property *prop)
         //        double temp=0;
     }
 
-    if (!strcmp(prop->getName(), "TELESCOPE_PARK"))
+    if (prop.isNameMatch("TELESCOPE_PARK"))
     {
-        ISwitchVectorProperty *svp = prop->getSwitch();
+        ISwitchVectorProperty *svp = prop.getSwitch();
 
         if (svp)
         {

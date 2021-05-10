@@ -145,58 +145,38 @@ QStringList INDIDBus::getProperties(const QString &device)
 
         if (dp->getDeviceName() == device)
         {
-            std::vector<INDI::Property *> *pAll = dp->getProperties();
-            INDI::Property *prop;
-
             // Let's print a list of all device properties
-            for (auto &property : *pAll)
+            for (const auto &prop : dp->getProperties())
             {
-                prop = property;
-
-                switch (prop->getType())
+                switch (prop.getType())
                 {
                     case INDI_SWITCH:
-                    {
-                        ISwitchVectorProperty *sp = prop->getSwitch();
-                        for (int j = 0; j < sp->nsp; j++)
-                            properties << device + '.' + QString(prop->getName()) + '.' + sp->sp[j].name;
-                    }
-                    break;
+                        for (const auto &it: *prop.getSwitch())
+                            properties << device + '.' + QString(prop.getName()) + '.' + it.getName();
+                        break;
 
                     case INDI_TEXT:
-                    {
-                        ITextVectorProperty *tp = prop->getText();
-                        for (int j = 0; j < tp->ntp; j++)
-                            properties << device + '.' + QString(prop->getName()) + '.' + tp->tp[j].name;
-                    }
-                    break;
+                        for (const auto &it: *prop.getText())
+                            properties << device + '.' + QString(prop.getName()) + '.' + it.getName();
+                        break;
 
                     case INDI_NUMBER:
-                    {
-                        INumberVectorProperty *np = prop->getNumber();
-                        for (int j = 0; j < np->nnp; j++)
-                            properties << device + '.' + QString(prop->getName()) + '.' + np->np[j].name;
-                    }
-                    break;
+                        for (const auto &it: *prop.getNumber())
+                            properties << device + '.' + QString(prop.getName()) + '.' + it.getName();
+                        break;
 
                     case INDI_LIGHT:
-                    {
-                        ILightVectorProperty *lp = prop->getLight();
-                        for (int j = 0; j < lp->nlp; j++)
-                            properties << device + '.' + QString(prop->getName()) + '.' + lp->lp[j].name;
-                    }
-                    break;
+                        for (const auto &it: *prop.getLight())
+                            properties << device + '.' + QString(prop.getName()) + '.' + it.getName();
+                        break;
 
                     case INDI_BLOB:
-                    {
-                        IBLOBVectorProperty *bp = prop->getBLOB();
-                        for (int j = 0; j < bp->nbp; j++)
-                            properties << device + '.' + QString(prop->getName()) + '.' + bp->bp[j].name;
-                    }
-                    break;
+                        for (const auto &it: *prop.getBLOB())
+                            properties << device + '.' + QString(prop.getName()) + '.' + it.getName();
+                        break;
 
                     case INDI_UNKNOWN:
-                        qCWarning(KSTARS) << device << '.' << QString(prop->getName()) << " has an unknown type! Aborting...";
+                        qCWarning(KSTARS) << device << '.' << QString(prop.getName()) << " has an unknown type! Aborting...";
                         return properties;
                         break;
                 }
@@ -222,11 +202,10 @@ QString INDIDBus::getPropertyState(const QString &device, const QString &propert
 
         if (dp->getDeviceName() == device)
         {
-            INDI::Property *prop = dp->getProperty(property.toLatin1());
-            if (prop)
+            auto prop = dp->getProperty(property.toLatin1());
+            if (prop.isValid())
             {
-                status = QString(pstateStr(prop->getState()));
-                return status;
+                return QString(prop.getStateAsString());
             }
 
             qCWarning(KSTARS) << "Could not find property: " << device << '.' << property;
@@ -250,24 +229,24 @@ bool INDIDBus::sendProperty(const QString &device, const QString &property)
 
         if (dp->getDeviceName() == device)
         {
-            INDI::Property *prop = dp->getProperty(property.toLatin1());
-            if (prop)
+            auto prop = dp->getProperty(property.toLatin1());
+            if (prop.isValid())
             {
-                switch (prop->getType())
+                switch (prop.getType())
                 {
                     case INDI_SWITCH:
-                        prop->getSwitch()->s = IPS_BUSY;
-                        cm->sendNewSwitch(prop->getSwitch());
+                        prop.getSwitch()->setState(IPS_BUSY);
+                        cm->sendNewSwitch(prop.getSwitch());
                         break;
 
                     case INDI_TEXT:
-                        prop->getText()->s = IPS_BUSY;
-                        cm->sendNewText(prop->getText());
+                        prop.getText()->setState(IPS_BUSY);
+                        cm->sendNewText(prop.getText());
                         break;
 
                     case INDI_NUMBER:
-                        prop->getNumber()->s = IPS_BUSY;
-                        cm->sendNewNumber(prop->getNumber());
+                        prop.getNumber()->setState(IPS_BUSY);
+                        cm->sendNewNumber(prop.getNumber());
                         break;
 
                     default:
@@ -299,17 +278,16 @@ QString INDIDBus::getLight(const QString &device, const QString &property, const
 
         if (dp->getDeviceName() == device)
         {
-            INDI::Property *prop = dp->getProperty(property.toLatin1());
-            if (prop)
+            auto prop = dp->getProperty(property.toLatin1());
+            if (prop.isValid())
             {
-                ILightVectorProperty *lp = prop->getLight();
+                auto lp = prop.getLight();
                 if (lp)
                 {
-                    ILight *l = IUFindLight(lp, lightName.toLatin1());
+                    auto l = lp->findWidgetByName(lightName.toLatin1());
                     if (l)
                     {
-                        status = QString(pstateStr(l->s));
-                        return status;
+                        return QString(l->getStateAsString());
                     }
                 }
             }

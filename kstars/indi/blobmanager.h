@@ -50,8 +50,8 @@ class BlobManager : public QObject, public INDI::BaseClient
 
   protected:
     virtual void newDevice(INDI::BaseDevice *device) override;
-    virtual void newProperty(INDI::Property *) override {}
-    virtual void removeProperty(INDI::Property *) override {}
+    virtual void newProperty(INDI::Property ) override {}
+    virtual void removeProperty(INDI::Property ) override {}
     virtual void removeDevice(INDI::BaseDevice *) override {}
     virtual void newSwitch(ISwitchVectorProperty *) override {}
     virtual void newNumber(INumberVectorProperty *) override {}

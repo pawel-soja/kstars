@@ -715,9 +715,9 @@ void Guide::addCamera(ISD::GDInterface *newCCD)
         return;
     if(guiderType != GUIDE_INTERNAL)
     {
-        connect(ccd, &ISD::CCD::newBLOBManager, [ccd, this](INDI::Property * prop)
+        connect(ccd, &ISD::CCD::newBLOBManager, [ccd, this](INDI::Property prop)
         {
-            if (!strcmp(prop->getName(), "CCD1") ||  !strcmp(prop->getName(), "CCD2"))
+            if (prop.isNameMatch("CCD1") ||  prop.isNameMatch("CCD2"))
             {
                 ccd->setBLOBEnabled(false); //This will disable PHD2 external guide frames until it is properly connected.
                 currentCCD = ccd;

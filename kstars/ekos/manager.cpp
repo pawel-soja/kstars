@@ -1829,7 +1829,7 @@ void Manager::processDeleteProperty(const QString &name)
     ekosLiveClient.get()->message()->processDeleteProperty(deviceInterface->getDeviceName(), name);
 }
 
-void Manager::processNewProperty(INDI::Property * prop)
+void Manager::processNewProperty(INDI::Property prop)
 {
     ISD::GenericDevice * deviceInterface = qobject_cast<ISD::GenericDevice *>(sender());
 
@@ -1837,7 +1837,7 @@ void Manager::processNewProperty(INDI::Property * prop)
 
     ekosLiveClient.get()->message()->processNewProperty(prop);
 
-    if (!strcmp(prop->getName(), "CONNECTION") && currentProfile->autoConnect)
+    if (prop.isNameMatch("CONNECTION") && currentProfile->autoConnect)
     {
         // Check if we need to do any mappings
         const QString port = m_ProfileMapping.value(QString(deviceInterface->getDeviceName())).toString();
@@ -1851,13 +1851,13 @@ void Manager::processNewProperty(INDI::Property * prop)
         return;
     }
 
-    if (!strcmp(prop->getName(), "DEVICE_PORT"))
+    if (prop.isNameMatch("DEVICE_PORT"))
     {
         // Check if we need to do any mappings
         const QString port = m_ProfileMapping.value(QString(deviceInterface->getDeviceName())).toString();
         if (!port.isEmpty())
         {
-            ITextVectorProperty *tvp = prop->getText();
+            ITextVectorProperty *tvp = prop.getText();
             IUSaveText(&(tvp->tp[0]), port.toLatin1().data());
             deviceInterface->getDriverInfo()->getClientManager()->sendNewText(tvp);
             // Now connect if we need to.
@@ -1868,13 +1868,13 @@ void Manager::processNewProperty(INDI::Property * prop)
     }
 
     // Check if we need to turn on DEBUG for logging purposes
-    if (!strcmp(prop->getName(), "DEBUG"))
+    if (prop.isNameMatch("DEBUG"))
     {
         uint16_t interface = deviceInterface->getDriverInterface();
         if ( opsLogs->getINDIDebugInterface() & interface )
         {
             // Check if we need to enable debug logging for the INDI drivers.
-            ISwitchVectorProperty * debugSP = prop->getSwitch();
+            ISwitchVectorProperty * debugSP = prop.getSwitch();
             debugSP->sp[0].s = ISS_ON;
             debugSP->sp[1].s = ISS_OFF;
             deviceInterface->getDriverInfo()->getClientManager()->sendNewSwitch(debugSP);
@@ -1882,14 +1882,14 @@ void Manager::processNewProperty(INDI::Property * prop)
     }
 
     // Handle debug levels for logging purposes
-    if (!strcmp(prop->getName(), "DEBUG_LEVEL"))
+    if (prop.isNameMatch("DEBUG_LEVEL"))
     {
         uint16_t interface = deviceInterface->getDriverInterface();
         // Check if the logging option for the specific device class is on and if the device interface matches it.
         if ( opsLogs->getINDIDebugInterface() & interface )
         {
             // Turn on everything
-            ISwitchVectorProperty * debugLevel = prop->getSwitch();
+            ISwitchVectorProperty * debugLevel = prop.getSwitch();
             for (int i = 0; i < debugLevel->nsp; i++)
                 debugLevel->sp[i].s = ISS_ON;
 
@@ -1897,29 +1897,29 @@ void Manager::processNewProperty(INDI::Property * prop)
         }
     }
 
-    if (!strcmp(prop->getName(), "ACTIVE_DEVICES"))
+    if (prop.isNameMatch("ACTIVE_DEVICES"))
     {
         if (deviceInterface->getDriverInterface() > 0)
             syncActiveDevices();
     }
 
-    if (!strcmp(prop->getName(), "TELESCOPE_INFO") || !strcmp(prop->getName(), "TELESCOPE_SLEW_RATE")
-            || !strcmp(prop->getName(), "TELESCOPE_PARK"))
+    if (prop.isNameMatch("TELESCOPE_INFO") || prop.isNameMatch("TELESCOPE_SLEW_RATE")
+            || prop.isNameMatch("TELESCOPE_PARK"))
     {
         ekosLiveClient.get()->message()->sendMounts();
         ekosLiveClient.get()->message()->sendScopes();
     }
 
-    if (!strcmp(prop->getName(), "CCD_INFO") || !strcmp(prop->getName(), "CCD_TEMPERATURE")
-            || !strcmp(prop->getName(), "CCD_ISO") ||
-            !strcmp(prop->getName(), "CCD_GAIN") || !strcmp(prop->getName(), "CCD_CONTROLS"))
+    if (prop.isNameMatch("CCD_INFO") || prop.isNameMatch("CCD_TEMPERATURE")
+            || prop.isNameMatch("CCD_ISO") ||
+            prop.isNameMatch("CCD_GAIN") || prop.isNameMatch("CCD_CONTROLS"))
     {
         ekosLiveClient.get()->message()->sendCameras();
         ekosLiveClient.get()->media()->registerCameras();
     }
 
-    if (!strcmp(prop->getName(), "CCD_TEMPERATURE") || !strcmp(prop->getName(), "FOCUSER_TEMPERATURE")
-            || !strcmp(prop->getName(), "WEATHER_PARAMETERS"))
+    if (prop.isNameMatch("CCD_TEMPERATURE") || prop.isNameMatch("FOCUSER_TEMPERATURE")
+            || prop.isNameMatch("WEATHER_PARAMETERS"))
     {
         if (focusProcess)
         {
@@ -1927,27 +1927,27 @@ void Manager::processNewProperty(INDI::Property * prop)
         }
     }
 
-    if (!strcmp(prop->getName(), "ABS_DOME_POSITION") || !strcmp(prop->getName(), "DOME_ABORT_MOTION") ||
-            !strcmp(prop->getName(), "DOME_PARK"))
+    if (prop.isNameMatch("ABS_DOME_POSITION") || prop.isNameMatch("DOME_ABORT_MOTION") ||
+            prop.isNameMatch("DOME_PARK"))
     {
         ekosLiveClient.get()->message()->sendDomes();
     }
 
-    if (!strcmp(prop->getName(), "CAP_PARK") || !strcmp(prop->getName(), "FLAT_LIGHT_CONTROL"))
+    if (prop.isNameMatch("CAP_PARK") || prop.isNameMatch("FLAT_LIGHT_CONTROL"))
     {
         ekosLiveClient.get()->message()->sendCaps();
     }
 
-    if (!strcmp(prop->getName(), "FILTER_NAME"))
+    if (prop.isNameMatch("FILTER_NAME"))
         ekosLiveClient.get()->message()->sendFilterWheels();
 
-    if (!strcmp(prop->getName(), "FILTER_NAME"))
+    if (prop.isNameMatch("FILTER_NAME"))
         filterManager.data()->initFilterProperties();
 
-    if (!strcmp(prop->getName(), "CONFIRM_FILTER_SET"))
+    if (prop.isNameMatch("CONFIRM_FILTER_SET"))
         filterManager.data()->initFilterProperties();
 
-    if (!strcmp(prop->getName(), "CCD_INFO") || !strcmp(prop->getName(), "GUIDER_INFO"))
+    if (prop.isNameMatch("CCD_INFO") || prop.isNameMatch("GUIDER_INFO"))
     {
         if (focusProcess.get() != nullptr)
             focusProcess->syncCCDInfo();
@@ -1961,7 +1961,7 @@ void Manager::processNewProperty(INDI::Property * prop)
         return;
     }
 
-    if (!strcmp(prop->getName(), "TELESCOPE_INFO") && managedDevices.contains(KSTARS_TELESCOPE))
+    if (prop.isNameMatch("TELESCOPE_INFO") && managedDevices.contains(KSTARS_TELESCOPE))
     {
         if (guideProcess.get() != nullptr)
         {
@@ -1984,11 +1984,11 @@ void Manager::processNewProperty(INDI::Property * prop)
         return;
     }
 
-    if (!strcmp(prop->getName(), "GUIDER_EXPOSURE"))
+    if (prop.isNameMatch("GUIDER_EXPOSURE"))
     {
         for (auto &device : findDevices(KSTARS_CCD))
         {
-            if (device->getDeviceName() == prop->getDeviceName())
+            if (device->getDeviceName() == prop.getDeviceName())
             {
                 initCapture();
                 initGuide();
@@ -2008,13 +2008,13 @@ void Manager::processNewProperty(INDI::Property * prop)
         return;
     }
 
-    if (!strcmp(prop->getName(), "CCD_FRAME_TYPE"))
+    if (prop.isNameMatch("CCD_FRAME_TYPE"))
     {
         if (captureProcess.get() != nullptr)
         {
             for (auto &device : findDevices(KSTARS_CCD))
             {
-                if (device->getDeviceName() == prop->getDeviceName())
+                if (device->getDeviceName() == prop.getDeviceName())
                 {
                     captureProcess->syncFrameType(device);
                     return;
@@ -2025,7 +2025,7 @@ void Manager::processNewProperty(INDI::Property * prop)
         return;
     }
 
-    if (!strcmp(prop->getName(), "CCD_ISO"))
+    if (prop.isNameMatch("CCD_ISO"))
     {
         if (captureProcess.get() != nullptr)
             captureProcess->checkCCD();
@@ -2033,7 +2033,7 @@ void Manager::processNewProperty(INDI::Property * prop)
         return;
     }
 
-    if (!strcmp(prop->getName(), "TELESCOPE_PARK") && managedDevices.contains(KSTARS_TELESCOPE))
+    if (prop.isNameMatch("TELESCOPE_PARK") && managedDevices.contains(KSTARS_TELESCOPE))
     {
         if (captureProcess.get() != nullptr)
             captureProcess->setTelescope(managedDevices[KSTARS_TELESCOPE]);
@@ -2045,7 +2045,7 @@ void Manager::processNewProperty(INDI::Property * prop)
     }
 
     /*
-    if (!strcmp(prop->getName(), "FILTER_NAME"))
+    if (prop.isNameMatch("FILTER_NAME"))
     {
         if (captureProcess.get() != nullptr)
             captureProcess->checkFilter();
@@ -2061,11 +2061,11 @@ void Manager::processNewProperty(INDI::Property * prop)
     }
     */
 
-    if (!strcmp(prop->getName(), "ASTROMETRY_SOLVER"))
+    if (prop.isNameMatch("ASTROMETRY_SOLVER"))
     {
         for (auto &device : genericDevices)
         {
-            if (device->getDeviceName() == prop->getDeviceName())
+            if (device->getDeviceName() == prop.getDeviceName())
             {
                 initAlign();
                 alignProcess->setAstrometryDevice(device);
@@ -2074,7 +2074,7 @@ void Manager::processNewProperty(INDI::Property * prop)
         }
     }
 
-    if (!strcmp(prop->getName(), "ABS_ROTATOR_ANGLE"))
+    if (prop.isNameMatch("ABS_ROTATOR_ANGLE"))
     {
         managedDevices[KSTARS_ROTATOR] = deviceInterface;
         if (captureProcess.get() != nullptr)
@@ -2083,14 +2083,14 @@ void Manager::processNewProperty(INDI::Property * prop)
             alignProcess->setRotator(deviceInterface);
     }
 
-    if (!strcmp(prop->getName(), "GPS_REFRESH"))
+    if (prop.isNameMatch("GPS_REFRESH"))
     {
         managedDevices.insertMulti(KSTARS_AUXILIARY, deviceInterface);
         if (mountProcess.get() != nullptr)
             mountProcess->setGPS(deviceInterface);
     }
 
-    if (focusProcess.get() != nullptr && strstr(prop->getName(), "FOCUS_"))
+    if (focusProcess.get() != nullptr && strstr(prop.getName(), "FOCUS_"))
     {
         focusProcess->checkFocuser();
     }
@@ -3337,10 +3337,10 @@ void Manager::updateDebugInterfaces()
 
     for (ISD::GDInterface * device : genericDevices)
     {
-        INDI::Property * debugProp = device->getProperty("DEBUG");
+        auto debugProp = device->getProperty("DEBUG");
         ISwitchVectorProperty * debugSP = nullptr;
-        if (debugProp)
-            debugSP = debugProp->getSwitch();
+        if (debugProp.isValid())
+            debugSP = debugProp.getSwitch();
         else
             continue;
 

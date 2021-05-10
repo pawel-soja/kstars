@@ -32,17 +32,17 @@ Dome::Dome(GDInterface *iPtr) : DeviceDecorator(iPtr)
     connect(readyTimer.get(), &QTimer::timeout, this, &Dome::ready);
 }
 
-void Dome::registerProperty(INDI::Property *prop)
+void Dome::registerProperty(INDI::Property prop)
 {
-    if (!prop->getRegistered())
+    if (!prop.getRegistered())
         return;
 
     if (isConnected())
         readyTimer.get()->start();
 
-    if (!strcmp(prop->getName(), "DOME_PARK"))
+    if (prop.isNameMatch("DOME_PARK"))
     {
-        ISwitchVectorProperty *svp = prop->getSwitch();
+        ISwitchVectorProperty *svp = prop.getSwitch();
 
         m_CanPark = true;
 
@@ -80,19 +80,19 @@ void Dome::registerProperty(INDI::Property *prop)
             }
         }
     }
-    else if (!strcmp(prop->getName(), "ABS_DOME_POSITION"))
+    else if (prop.isNameMatch("ABS_DOME_POSITION"))
     {
         m_CanAbsMove = true;
     }
-    else if (!strcmp(prop->getName(), "REL_DOME_POSITION"))
+    else if (prop.isNameMatch("REL_DOME_POSITION"))
     {
         m_CanRelMove = true;
     }
-    else if (!strcmp(prop->getName(), "DOME_ABORT_MOTION"))
+    else if (prop.isNameMatch("DOME_ABORT_MOTION"))
     {
         m_CanAbort = true;
     }
-    else if (!strcmp(prop->getName(), "DOME_SHUTTER"))
+    else if (prop.isNameMatch("DOME_SHUTTER"))
     {
         m_HasShutter = true;
     }

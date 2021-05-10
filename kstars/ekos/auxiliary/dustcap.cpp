@@ -48,23 +48,23 @@ void DustCap::removeDevice(ISD::GDInterface *device)
     }
 }
 
-void DustCap::processProp(INDI::Property *prop)
+void DustCap::processProp(INDI::Property prop)
 {
-    if (!prop->getRegistered())
+    if (!prop.getRegistered())
         return;
 
-    if (!strcmp(prop->getName(), "FLAT_LIGHT_CONTROL"))
+    if (prop.isNameMatch("FLAT_LIGHT_CONTROL"))
     {
-        ISwitchVectorProperty *svp = prop->getSwitch();
+        ISwitchVectorProperty *svp = prop.getSwitch();
         if ((svp->sp[0].s == ISS_ON) != m_LightEnabled)
         {
             m_LightEnabled = (svp->sp[0].s == ISS_ON);
             emit lightToggled(m_LightEnabled);
         }
     }
-    else if (!strcmp(prop->getName(), "FLAT_LIGHT_INTENSITY"))
+    else if (prop.isNameMatch("FLAT_LIGHT_INTENSITY"))
     {
-        INumberVectorProperty *nvp = prop->getNumber();
+        INumberVectorProperty *nvp = prop.getNumber();
         uint16_t newIntensity = static_cast<uint16_t>(nvp->np[0].value);
         if (newIntensity != m_lightIntensity)
         {

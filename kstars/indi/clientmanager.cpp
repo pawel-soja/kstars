@@ -86,40 +86,40 @@ void ClientManager::newDevice(INDI::BaseDevice *dp)
     emit newINDIDevice(devInfo);
 }
 
-void ClientManager::newProperty(INDI::Property *prop)
+void ClientManager::newProperty(INDI::Property prop)
 {
     // Do not emit the signal if the server is disconnected or disconnecting (deadlock between signals)
     if (!isServerConnected())
     {
-        IDLog("Received new property %s for disconnected device %s, discarding\n", prop->getName(), prop->getDeviceName());
+        IDLog("Received new property %s for disconnected device %s, discarding\n", prop.getName(), prop.getDeviceName());
         return;
     }
 
-    //IDLog("Received new property %s for device %s\n", prop->getName(), prop->getgetDeviceName());
+    //IDLog("Received new property %s for device %s\n", prop.getName(), prop.getgetDeviceName());
     emit newINDIProperty(prop);
 
     // Only handle RW and RO BLOB properties
-    if (prop->getType() == INDI_BLOB && prop->getPermission() != IP_WO)
+    if (prop.getType() == INDI_BLOB && prop.getPermission() != IP_WO)
     {
-        QPointer<BlobManager> bm = new BlobManager(getHost(), getPort(), prop->getBaseDevice()->getDeviceName(), prop->getName());
+        QPointer<BlobManager> bm = new BlobManager(getHost(), getPort(), prop.getBaseDevice()->getDeviceName(), prop.getName());
         connect(bm.data(), &BlobManager::newINDIBLOB, this, &ClientManager::newINDIBLOB);
         connect(bm.data(), &BlobManager::connected, this, [prop, this]()
         {
-            if (prop && prop->getRegistered())
-                emit newBLOBManager(prop->getBaseDevice()->getDeviceName(), prop);
+            if (prop.isValid() && prop.getRegistered())
+                emit newBLOBManager(prop.getBaseDevice()->getDeviceName(), prop);
         });
         blobManagers.append(bm);
     }
 }
 
-void ClientManager::removeProperty(INDI::Property *prop)
+void ClientManager::removeProperty(INDI::Property prop)
 {
-    const QString name = prop->getName();
-    const QString device = prop->getDeviceName();
+    const QString name = prop.getName();
+    const QString device = prop.getDeviceName();
     emit removeINDIProperty(device, name);
 
     // If BLOB property is removed, remove its corresponding property if one exists.
-    if (blobManagers.empty() == false && prop->getType() == INDI_BLOB && prop->getPermission() != IP_WO)
+    if (blobManagers.empty() == false && prop.getType() == INDI_BLOB && prop.getPermission() != IP_WO)
     {
         for (QPointer<BlobManager> bm : blobManagers)
         {

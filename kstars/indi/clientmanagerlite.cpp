@@ -316,21 +316,21 @@ QString ClientManagerLite::syncLED(const QString &device, const QString &propert
     {
         if (devInfo->device->getDeviceName() == device)
         {
-            INDI::Property *prop = devInfo->device->getProperty(property.toLatin1());
+            INDI::Property prop = devInfo->device->getProperty(property.toLatin1());
             if (prop)
             {
-                IPState state = prop->getState();
+                IPState state = prop.getState();
                 if (!name.isEmpty())
                 {
-                    ILight *lights = prop->getLight()->lp;
-                    for (int i = 0; i < prop->getLight()->nlp; i++)
+                    ILight *lights = prop.getLight()->lp;
+                    for (int i = 0; i < prop.getLight()->nlp; i++)
                     {
                         if (lights[i].name == name)
                         {
                             state = lights[i].s;
                             break;
                         }
-                        if (i == prop->getLight()->nlp - 1)
+                        if (i == prop.getLight()->nlp - 1)
                             return ""; // no Light with name "name" found so return empty string
                     }
                 }
@@ -483,7 +483,7 @@ void ClientManagerLite::buildNumberGUI(Property *property)
     }
 }
 
-void ClientManagerLite::buildMenuGUI(INDI::Property *property)
+void ClientManagerLite::buildMenuGUI(INDI::Property property)
 {
     /*QStringList menuOptions;
     QString oneOption;
@@ -517,7 +517,7 @@ void ClientManagerLite::buildMenuGUI(INDI::Property *property)
     }
 }
 
-void ClientManagerLite::buildSwitchGUI(INDI::Property *property, PGui guiType)
+void ClientManagerLite::buildSwitchGUI(INDI::Property property, PGui guiType)
 {
     ISwitchVectorProperty *svp = property->getSwitch();
     bool exclusive             = false;
@@ -545,7 +545,7 @@ void ClientManagerLite::buildSwitchGUI(INDI::Property *property, PGui guiType)
     }
 }
 
-void ClientManagerLite::buildSwitch(bool buttonGroup, ISwitch *sw, INDI::Property *property, bool exclusive,
+void ClientManagerLite::buildSwitch(bool buttonGroup, ISwitch *sw, INDI::Property property, bool exclusive,
                                     PGui guiType)
 {
     QString name  = sw->name;
@@ -604,7 +604,7 @@ void ClientManagerLite::buildSwitch(bool buttonGroup, ISwitch *sw, INDI::Propert
     }
 }
 
-void ClientManagerLite::buildLightGUI(INDI::Property *property)
+void ClientManagerLite::buildLightGUI(INDI::Property property)
 {
     ILightVectorProperty *lvp = property->getLight();
 
@@ -631,7 +631,7 @@ void ClientManagerLite::buildLightGUI(INDI::Property *property)
     }
 }
 
-/*void ClientManagerLite::buildBLOBGUI(INDI::Property *property) {
+/*void ClientManagerLite::buildBLOBGUI(INDI::Property property) {
     IBLOBVectorProperty *ibp = property->getBLOB();
 
     QString name  = ibp->name;
@@ -676,7 +676,7 @@ void ClientManagerLite::sendNewINDISwitch(const QString &deviceName, const QStri
         INDI::BaseDevice *device = devInfo->device;
         if (device->getDeviceName() == deviceName)
         {
-            INDI::Property *property = device->getProperty(propName.toLatin1());
+            INDI::Property property = device->getProperty(propName.toLatin1());
             if (property)
             {
                 ISwitchVectorProperty *svp = property->getSwitch();
@@ -784,7 +784,7 @@ void ClientManagerLite::sendNewINDISwitch(const QString &deviceName, const QStri
             INDI::BaseDevice *device = devInfo->device;
             if (device->getDeviceName() == deviceName)
             {
-                INDI::Property *property = device->getProperty(propName.toStdString().c_str());
+                INDI::Property property = device->getProperty(propName.toStdString().c_str());
                 if (property)
                 {
                     ISwitchVectorProperty *svp = property->getSwitch();
@@ -883,7 +883,7 @@ void ClientManagerLite::removeDevice(BaseDevice *dp)
     emit removeINDIDevice(QString(dp->getDeviceName()));
 }
 
-void ClientManagerLite::newProperty(INDI::Property *property)
+void ClientManagerLite::newProperty(INDI::Property property)
 {
     QString deviceName      = property->getDeviceName();
     QString name            = property->getName();
@@ -957,7 +957,7 @@ void ClientManagerLite::newProperty(INDI::Property *property)
     }
 }
 
-void ClientManagerLite::removeProperty(INDI::Property *property)
+void ClientManagerLite::removeProperty(INDI::Property property)
 {
     if (property == nullptr)
         return;

@@ -545,17 +545,17 @@ void Message::sendFilterWheels()
 
     for(ISD::GDInterface *gd : m_Manager->findDevices(KSTARS_FILTER))
     {
-        INDI::Property *prop = gd->getProperty("FILTER_NAME");
-        if (prop == nullptr)
+        auto prop = gd->getProperty("FILTER_NAME");
+        if (!prop.isValid())
             break;
 
-        ITextVectorProperty *filterNames = prop->getText();
+        auto filterNames = prop.getText();
         if (filterNames == nullptr)
             break;
 
         QJsonArray filters;
-        for (int i = 0; i < filterNames->ntp; i++)
-            filters.append(filterNames->tp[i].text);
+        for (const auto &it: *filterNames)
+            filters.append(it.getText());
 
         QJsonObject oneFilter =
         {
@@ -1255,10 +1255,10 @@ void Message::processDeviceCommands(const QString &command, const QJsonObject &p
     else if (command == commands[DEVICE_GET])
     {
         QJsonArray properties;
-        for (const auto &oneProp : *oneDevice->getProperties())
+        for (const auto &oneProp : oneDevice->getProperties())
         {
             QJsonObject singleProp;
-            if (oneDevice->getJSONProperty(oneProp->getName(), singleProp, payload["compact"].toBool(false)))
+            if (oneDevice->getJSONProperty(oneProp.getName(), singleProp, payload["compact"].toBool(false)))
                 properties.append(singleProp);
         }
 
@@ -1293,17 +1293,17 @@ void Message::processDeviceCommands(const QString &command, const QJsonObject &p
         else if (groups.isEmpty() == false)
         {
             QVariantList indiGroups = groups.toVariantList();
-            for (auto &oneProp : *oneDevice->getProperties())
+            for (const auto &oneProp : oneDevice->getProperties())
             {
-                if (indiGroups.contains(oneProp->getGroupName()))
-                    props.insert(oneProp->getName());
+                if (indiGroups.contains(oneProp.getGroupName()))
+                    props.insert(oneProp.getName());
             }
         }
         // Otherwise, subscribe to ALL property in this device
         else
         {
-            for (auto &oneProp : *oneDevice->getProperties())
-                props.insert(oneProp->getName());
+            for (const auto &oneProp : oneDevice->getProperties())
+                props.insert(oneProp.getName());
         }
 
         m_PropertySubscriptions[device] = props;
@@ -1329,17 +1329,17 @@ void Message::processDeviceCommands(const QString &command, const QJsonObject &p
         else if (groups.isEmpty() == false)
         {
             QVariantList indiGroups = groups.toVariantList();
-            for (auto &oneProp : *oneDevice->getProperties())
+            for (const auto &oneProp : oneDevice->getProperties())
             {
-                if (indiGroups.contains(oneProp->getGroupName()))
-                    props.remove(oneProp->getName());
+                if (indiGroups.contains(oneProp.getGroupName()))
+                    props.remove(oneProp.getName());
             }
         }
         // Otherwise, subscribe to ALL property in this device
         else
         {
-            for (auto &oneProp : *oneDevice->getProperties())
-                props.remove(oneProp->getName());
+            for (const auto &oneProp : oneDevice->getProperties())
+                props.remove(oneProp.getName());
         }
 
         m_PropertySubscriptions[device] = props;
@@ -1519,7 +1519,7 @@ void Message::processDialogResponse(const QJsonObject &payload)
     KSMessageBox::Instance()->selectResponse(payload["button"].toString());
 }
 
-void Message::processNewProperty(INDI::Property * prop)
+void Message::processNewProperty(INDI::Property prop)
 {
     // Do not send new properties until all properties settle down
     // then send any properties that appears afterwards since the initial bunch

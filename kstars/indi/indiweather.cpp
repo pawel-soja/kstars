@@ -24,9 +24,9 @@ Weather::Weather(GDInterface *iPtr) : DeviceDecorator(iPtr)
     connect(readyTimer.get(), &QTimer::timeout, this, &Weather::ready);
 }
 
-void Weather::registerProperty(INDI::Property *prop)
+void Weather::registerProperty(INDI::Property prop)
 {
-    if (!prop->getRegistered())
+    if (!prop.getRegistered())
         return;
 
     if (isConnected())

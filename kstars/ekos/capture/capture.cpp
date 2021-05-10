@@ -7199,13 +7199,13 @@ void Capture::setGain(double value)
     // Property CCD_GAIN and
     // Part of CCD_CONTROLS properties.
     // Therefore, we have to find what the currently camera supports first.
-    if (currentCCD->getProperty("CCD_GAIN"))
+    if (currentCCD->getProperty("CCD_GAIN").isValid())
     {
         QMap<QString, double> ccdGain;
         ccdGain["GAIN"] = value;
         customProps["CCD_GAIN"] = ccdGain;
     }
-    else if (currentCCD->getProperty("CCD_CONTROLS"))
+    else if (currentCCD->getProperty("CCD_CONTROLS").isValid())
     {
         QMap<QString, double> ccdGain = customProps["CCD_CONTROLS"];
         ccdGain["Gain"] = value;
@@ -7223,11 +7223,11 @@ double Capture::getGain()
     // Property CCD_GAIN and
     // Part of CCD_CONTROLS properties.
     // Therefore, we have to find what the currently camera supports first.
-    if (currentCCD->getProperty("CCD_GAIN"))
+    if (currentCCD->getProperty("CCD_GAIN").isValid())
     {
         return customProps["CCD_GAIN"].value("GAIN", -1);
     }
-    else if (currentCCD->getProperty("CCD_CONTROLS"))
+    else if (currentCCD->getProperty("CCD_CONTROLS").isValid())
     {
         return customProps["CCD_CONTROLS"].value("Gain", -1);
     }
@@ -7243,13 +7243,13 @@ void Capture::setOffset(double value)
     // Property CCD_OFFSET and
     // Part of CCD_CONTROLS properties.
     // Therefore, we have to find what the currently camera supports first.
-    if (currentCCD->getProperty("CCD_OFFSET"))
+    if (currentCCD->getProperty("CCD_OFFSET").isValid())
     {
         QMap<QString, double> ccdOffset;
         ccdOffset["OFFSET"] = value;
         customProps["CCD_OFFSET"] = ccdOffset;
     }
-    else if (currentCCD->getProperty("CCD_CONTROLS"))
+    else if (currentCCD->getProperty("CCD_CONTROLS").isValid())
     {
         QMap<QString, double> ccdOffset = customProps["CCD_CONTROLS"];
         ccdOffset["Offset"] = value;
@@ -7267,11 +7267,11 @@ double Capture::getOffset()
     // Property CCD_GAIN and
     // Part of CCD_CONTROLS properties.
     // Therefore, we have to find what the currently camera supports first.
-    if (currentCCD->getProperty("CCD_OFFSET"))
+    if (currentCCD->getProperty("CCD_OFFSET").isValid())
     {
         return customProps["CCD_OFFSET"].value("OFFSET", -1);
     }
-    else if (currentCCD->getProperty("CCD_CONTROLS"))
+    else if (currentCCD->getProperty("CCD_CONTROLS").isValid())
     {
         return customProps["CCD_CONTROLS"].value("Offset", -1);
     }

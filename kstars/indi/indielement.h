@@ -45,7 +45,7 @@ class INDI_E : public QObject
 {
         Q_OBJECT
     public:
-        INDI_E(INDI_P *gProp, const INDI::Property *dProp);
+        INDI_E(INDI_P *gProp, const INDI::Property dProp);
         ~INDI_E();
 
         const QString &getLabel()
@@ -108,7 +108,7 @@ class INDI_E : public QObject
         /// Label is the name by default, unless specified
         QString label;
         /// Parent DATA property
-        const INDI::Property *dataProp { nullptr };
+        const INDI::Property dataProp;
         /// Parent GUI property
         INDI_P *guiProp { nullptr };
         /// Horizontal layout

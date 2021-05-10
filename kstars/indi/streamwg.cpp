@@ -120,7 +120,7 @@ StreamWG::StreamWG(ISD::CCD *ccd) : QDialog(KStars::Instance())
     resize(Options::streamWindowWidth(), Options::streamWindowHeight());
 
     eoszoom = currentCCD->getProperty("eoszoom");
-    if (eoszoom == nullptr)
+    if (!eoszoom.isValid())
     {
         zoomLevelCombo->hide();
     }
@@ -128,9 +128,9 @@ StreamWG::StreamWG(ISD::CCD *ccd) : QDialog(KStars::Instance())
     {
         connect(zoomLevelCombo, static_cast<void(QComboBox::*)(int)>(&QComboBox::activated), [&]()
         {
-            ITextVectorProperty * tvp = eoszoom->getText();
+            auto tvp = eoszoom.getText();
             QString zoomLevel = zoomLevelCombo->currentText().remove("x");
-            IUSaveText(&(tvp->tp[0]), zoomLevel.toLatin1().constData());
+            tvp->at(0)->setText(zoomLevel.toLatin1().constData());
             handLabel->setEnabled(true);
             NSSlider->setEnabled(true);
             WESlider->setEnabled(true);
@@ -145,7 +145,7 @@ StreamWG::StreamWG(ISD::CCD *ccd) : QDialog(KStars::Instance())
     }
 
     eoszoomposition = currentCCD->getProperty("eoszoomposition");
-    if (eoszoomposition == nullptr)
+    if (!eoszoomposition.isValid())
     {
         handLabel->hide();
         NSSlider->hide();
@@ -157,17 +157,17 @@ StreamWG::StreamWG(ISD::CCD *ccd) : QDialog(KStars::Instance())
     {
         connect(NSSlider, &QSlider::sliderReleased, [&]()
         {
-            ITextVectorProperty * tvp = eoszoomposition->getText();
+            auto tvp = eoszoomposition.getText();
             QString pos = QString("%1,%2").arg(WESlider->value()).arg(NSSlider->value());
-            IUSaveText(&(tvp->tp[0]), pos.toLatin1().constData());
+            tvp->at(0)->setText(pos.toLatin1().constData());
             currentCCD->getDriverInfo()->getClientManager()->sendNewText(tvp);
         });
 
         connect(WESlider, &QSlider::sliderReleased, [&]()
         {
-            ITextVectorProperty * tvp = eoszoomposition->getText();
+            auto tvp = eoszoomposition.getText();
             QString pos = QString("%1,%2").arg(WESlider->value()).arg(NSSlider->value());
-            IUSaveText(&(tvp->tp[0]), pos.toLatin1().constData());
+            tvp->at(0)->setText(pos.toLatin1().constData());
             currentCCD->getDriverInfo()->getClientManager()->sendNewText(tvp);
         });
 
@@ -261,7 +261,7 @@ void StreamWG::showEvent(QShowEvent *ev)
     if (currentCCD)
     {
         // Always reset to 1x for DSLRs since they reset whenever they are triggered again.
-        if (eoszoom)
+        if (eoszoom.isValid())
             zoomLevelCombo->setCurrentIndex(0);
     }
 
