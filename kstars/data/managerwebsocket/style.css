@@ -1,0 +1,103 @@
+body
+{
+    background-color: black;
+    color: white;
+    
+}
+
+.grid3x {
+    display: grid;
+    gap: 1px;
+    grid-template-columns: repeat(3, 0fr);
+    justify-content: center;
+}
+
+.coords {
+    display: grid;
+    gap: 1px;
+    grid-template-columns: 1fr 1fr;
+    
+    font-size: 12px;
+}
+
+.coords span
+{
+    color: yellow;
+    font-family: monospace;
+    white-space: pre-wrap; 
+}
+
+label {
+    font-weight: bold;
+    color: white;
+    font-family: default;
+}
+
+.container
+{
+    /* width: 192px; */
+    width: 240px;
+    margin: 0px auto;
+}
+
+.motion, .stop
+{
+    border: 0px;
+    margin: 0px;
+    width:  80px;
+    height: 80px;
+    background-color: silver;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.blank
+{
+    border: 0px;
+    margin: 0px;
+    width:  80px;
+    height: 80px;
+}
+
+button
+{
+    border: 0px;
+    margin: 0px;
+    width:  80px;
+    height: 80px;
+    background-color: silver;
+
+}
+
+input[type=range]
+{
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+button:active, button:active
+{
+    background-color: red;
+}
+
+.east      { background-image: url(qml/mount/go-east.png); }
+.north     { background-image: url(qml/mount/go-north.png); }
+.northeast { background-image: url(qml/mount/go-northeast.png); }
+.northwest { background-image: url(qml/mount/go-northwest.png); }
+.south     { background-image: url(qml/mount/go-south.png); }
+.southeast { background-image: url(qml/mount/go-southeast.png); }
+.southwest { background-image: url(qml/mount/go-southwest.png); }
+.west      { background-image: url(qml/mount/go-west.png); }
+.stop      { background-image: url(qml/mount/stop.png); }
+
+.arrow-down:before
+{
+    content: "\2913";
+    font-size: 48px;
+}
+
+.arrow-up:before
+{
+    content: '\2912';
+    font-size: 48px;
+}

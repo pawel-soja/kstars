@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<header>
+    <title>KStars methods</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    
+    <!-- dynamic, see managerwebsocket.cpp -->
+    <script src="target.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
+</header>
+<body id="app">
+    <div>Status: {{status}}</div>
+    <hr />
+
+    <div class="container">
+        <h3>Mount</h3>
+        <div class="grid3x">
+            <button class="motion northwest" v-pressed="() => { invoke('ekos.mount.motionCommand', 0,  0,  0) }" v-released="() => { invoke('ekos.mount.motionCommand', 1,  0,  0) }"></button>
+            <button class="motion north"     v-pressed="() => { invoke('ekos.mount.motionCommand', 0,  0, -1) }" v-released="() => { invoke('ekos.mount.motionCommand', 1,  0, -1) }"></button>
+            <button class="motion northeast" v-pressed="() => { invoke('ekos.mount.motionCommand', 0,  0,  1) }" v-released="() => { invoke('ekos.mount.motionCommand', 1,  0,  1) }"></button>
+
+            <button class="motion west"      v-pressed="() => { invoke('ekos.mount.motionCommand', 0, -1,  0) }" v-released="() => { invoke('ekos.mount.motionCommand', 1, -1,  0) }"></button>
+            <button class="stop"             v-pressed="() => { invoke('ekos.mount.abort') }"></button>
+            <button class="motion east"      v-pressed="() => { invoke('ekos.mount.motionCommand', 0, -1,  1) }" v-released="() => { invoke('ekos.mount.motionCommand', 1, -1,  1) }"></button>
+
+            <button class="motion southwest" v-pressed="() => { invoke('ekos.mount.motionCommand', 0,  1,  0) }" v-released="() => { invoke('ekos.mount.motionCommand', 1,  1,  0) }"></button>
+            <button class="motion south"     v-pressed="() => { invoke('ekos.mount.motionCommand', 0,  1, -1) }" v-released="() => { invoke('ekos.mount.motionCommand', 1,  1, -1) }"></button>
+            <button class="motion southeast" v-pressed="() => { invoke('ekos.mount.motionCommand', 0,  1,  1) }" v-released="() => { invoke('ekos.mount.motionCommand', 1,  1,  1) }"></button>
+        </div>
+        <div>
+            <input type="range" min="0" max="4" v-model.number="ekos.mount.slewRate" />
+            {{Math.pow(2, ekos.mount.slewRate)}}x
+        </div>
+        <div class="coords">
+            <div><label>RA:</label><span>{{ $filters.toHHMMSS(ekos.mount.equatorialCoords[0]) }}</span></div>
+            <div><label>AZ:</label><span>{{ $filters.toDDMMSS(ekos.mount.horizontalCoords[0]) }}</span></div>
+            <div><label>DE:</label><span>{{ $filters.toDDMMSS(ekos.mount.equatorialCoords[1]) }}</span></div>
+            <div><label>AL:</label><span>{{ $filters.toDDMMSS(ekos.mount.horizontalCoords[1]) }}</span></div>
+        </div>
+
+        <h3>Focuser</h3>
+        <div class="grid3x">
+            <button class="arrow-down" v-pressed="() => { invoke('ekos.focus.adjustFocusOffset', -scope.focus.step, false) }"></button>
+            <button class="arrow-up"   v-pressed="() => { invoke('ekos.focus.adjustFocusOffset',  scope.focus.step, false) }"></button>
+            <div class="blank"></div>
+        </div>
+        <div>
+            <input type="range" min="0" max="3" v-model="scope.focus.stepLevel"/>
+            {{scope.focus.step}}x
+        </div>
+
+    </div>
+
+    <pre>{{logOutput.slice(-5).join('\n')}}</pre>
+
+    <script src="vue.global.prod.min.js" integrity="sha512-kwYHlEpv/gjF1VrvFP/ijgu5blL4Gg/c1J3W+TG2G009geu0J/7M8w9GtLt191V4IHUj1FCWlPuk8SkfuW5irA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="object.prototype.js"></script>
+    <script src="vue.app.js"></script>
+</body>
+</html>

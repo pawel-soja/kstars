@@ -33,6 +33,8 @@
 #include <QHash>
 #include <QtDBus/QtDBus>
 
+#include "managerwebsocket.h"
+
 #include <memory>
 
 //! Generic record interfaces and implementations.
@@ -559,6 +561,8 @@ class Manager : public QDialog, public Ui::Manager
         friend class EkosLive::Media;
 
         static Manager *_Manager;
+
+        ManagerWebSocket m_managerWebSocket {this};
 };
 
 }

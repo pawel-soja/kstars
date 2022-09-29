@@ -179,6 +179,7 @@ if (INDI_FOUND)
         set(ekos_SRCS
             ekos/ekos.cpp
             ekos/manager.cpp
+            ekos/managerwebsocket.cpp
             ekos/manager/focusmanager.cpp
             ekos/manager/guidemanager.cpp
             ekos/profileeditor.cpp
